@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -40,34 +41,74 @@ class _MemeHomeViewState extends State<MemeHomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Add haptic feedback for better UX
+          HapticFeedback.lightImpact();
+          
+          // Trigger refresh and wait for completion
+          context.read<MemeBloc>().add(LoadMemesEvent());
+          
+          // Wait for the state to change to either loaded or error
+          await context.read<MemeBloc>().stream.firstWhere(
+            (state) => state is MemeLoaded || state is MemeError,
+          );
+        },
+        color: Theme.of(context).colorScheme.primary,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        child: CustomScrollView(
+          slivers: [
           SliverAppBar(
             expandedHeight: 120,
             floating: true,
             pinned: true,
             elevation: 0,
-            surfaceTintColor: Theme.of(context).colorScheme.primary,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                'Meme Editor',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.primaryContainer,
+                  ],
                 ),
               ),
-              titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Theme.of(context).colorScheme.primaryContainer.withOpacity(0.1),
-                      Theme.of(context).colorScheme.tertiaryContainer.withOpacity(0.1),
-                    ],
+              child: Stack(
+                children: [
+                  Positioned(
+                    right: -30,
+                    top: -30,
+                    child: Container(
+                      width: 150,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                      ),
+                    ),
                   ),
-                ),
+                  Positioned(
+                    left: -20,
+                    bottom: -40,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            title: Text(
+              'Meme Editor',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onPrimary,
               ),
             ),
             actions: [
@@ -78,7 +119,7 @@ class _MemeHomeViewState extends State<MemeHomeView> {
                   if (state is MemeLoaded) {
                     isOffline = state.isOfflineMode;
                   }
-                  
+
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -88,9 +129,7 @@ class _MemeHomeViewState extends State<MemeHomeView> {
                         Icon(
                           isOffline ? Icons.cloud_off : Icons.cloud,
                           size: 20,
-                          color: isOffline 
-                              ? Theme.of(context).colorScheme.error
-                              : Theme.of(context).colorScheme.primary,
+                          color: isOffline ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onPrimary,
                         ),
                         const SizedBox(width: 4),
                         Switch(
@@ -99,6 +138,10 @@ class _MemeHomeViewState extends State<MemeHomeView> {
                             context.read<MemeBloc>().add(ToggleOfflineModeEvent(value));
                           },
                           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          activeColor: Theme.of(context).colorScheme.primary,
+                          activeTrackColor: Theme.of(context).colorScheme.primaryContainer,
+                          inactiveThumbColor: Theme.of(context).colorScheme.outline,
+                          inactiveTrackColor: Theme.of(context).colorScheme.surfaceVariant,
                         ),
                       ],
                     ),
@@ -112,18 +155,17 @@ class _MemeHomeViewState extends State<MemeHomeView> {
                   icon: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: Icon(
-                      Theme.of(context).brightness == Brightness.dark
-                          ? Icons.light_mode_rounded
-                          : Icons.dark_mode_rounded,
+                      Theme.of(context).brightness == Brightness.dark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
                       key: ValueKey(Theme.of(context).brightness),
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                   onPressed: () {
                     context.read<ThemeBloc>().add(ToggleThemeEvent());
                   },
                   style: IconButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
-                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    backgroundColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
                 ),
               ),
@@ -178,20 +220,20 @@ class _MemeHomeViewState extends State<MemeHomeView> {
                   child: Center(child: CircularProgressIndicator()),
                 );
               }
-              
+
               if (state is MemeError) {
                 return SliverFillRemaining(
                   child: _buildErrorState(context, state.message),
                 );
               }
-              
+
               if (state is MemeLoaded) {
                 if (state.filteredMemes.isEmpty) {
                   return SliverFillRemaining(
                     child: _buildEmptyState(context, state.searchQuery),
                   );
                 }
-                
+
                 return SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverMasonryGrid.count(
@@ -208,13 +250,11 @@ class _MemeHomeViewState extends State<MemeHomeView> {
                           Navigator.push(
                             context,
                             PageRouteBuilder(
-                              pageBuilder: (context, animation, secondaryAnimation) =>
-                                  MemeDetailPage(meme: meme),
+                              pageBuilder: (context, animation, secondaryAnimation) => MemeDetailPage(meme: meme),
                               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                 return SlideTransition(
                                   position: animation.drive(
-                                    Tween(begin: const Offset(1.0, 0.0), end: Offset.zero)
-                                        .chain(CurveTween(curve: Curves.easeOutCubic)),
+                                    Tween(begin: const Offset(1.0, 0.0), end: Offset.zero).chain(CurveTween(curve: Curves.easeOutCubic)),
                                   ),
                                   child: child,
                                 );
@@ -228,7 +268,7 @@ class _MemeHomeViewState extends State<MemeHomeView> {
                   ),
                 );
               }
-              
+
               return const SliverFillRemaining(
                 child: Center(child: Text('No data')),
               );
@@ -238,26 +278,6 @@ class _MemeHomeViewState extends State<MemeHomeView> {
           const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
         ],
       ),
-      // Floating Refresh Button
-      floatingActionButton: BlocBuilder<MemeBloc, MemeState>(
-        builder: (context, state) {
-          if (state is MemeLoaded) {
-            return AnimatedScale(
-              scale: 1.0,
-              duration: const Duration(milliseconds: 300),
-              child: FloatingActionButton.extended(
-                onPressed: () {
-                  context.read<MemeBloc>().add(RefreshMemesEvent());
-                },
-                icon: const Icon(Icons.refresh_rounded),
-                label: Text(state.isOfflineMode ? 'Refresh Cache' : 'Refresh'),
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
       ),
     );
   }
@@ -285,16 +305,25 @@ class _MemeHomeViewState extends State<MemeHomeView> {
             Text(
               'Oops! Something went wrong',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Pull down to refresh or tap the button below',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                    fontStyle: FontStyle.italic,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -335,22 +364,18 @@ class _MemeHomeViewState extends State<MemeHomeView> {
             ),
             const SizedBox(height: 24),
             Text(
-              searchQuery.isNotEmpty 
-                  ? 'No memes found'
-                  : 'No memes available',
+              searchQuery.isNotEmpty ? 'No memes found' : 'No memes available',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
-              searchQuery.isNotEmpty 
-                  ? 'Try searching for something else'
-                  : 'Pull down to refresh or check your connection',
+              searchQuery.isNotEmpty ? 'Try searching for something else' : 'Pull down to refresh',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -376,8 +401,7 @@ class AnimatedMemeGridItem extends StatefulWidget {
   State<AnimatedMemeGridItem> createState() => _AnimatedMemeGridItemState();
 }
 
-class _AnimatedMemeGridItemState extends State<AnimatedMemeGridItem>
-    with SingleTickerProviderStateMixin {
+class _AnimatedMemeGridItemState extends State<AnimatedMemeGridItem> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
@@ -451,7 +475,7 @@ class _AnimatedMemeGridItemState extends State<AnimatedMemeGridItem>
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+                              Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
                               Theme.of(context).colorScheme.primaryContainer.withOpacity(0.1),
                             ],
                           ),
@@ -500,9 +524,9 @@ class _AnimatedMemeGridItemState extends State<AnimatedMemeGridItem>
                             Text(
                               widget.meme.name,
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
+                                    fontWeight: FontWeight.w500,
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                  ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -518,8 +542,8 @@ class _AnimatedMemeGridItemState extends State<AnimatedMemeGridItem>
                                 Text(
                                   '${widget.meme.width}×${widget.meme.height}',
                                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                  ),
+                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      ),
                                 ),
                               ],
                             ),

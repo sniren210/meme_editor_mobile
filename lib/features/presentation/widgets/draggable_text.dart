@@ -20,6 +20,7 @@ class DraggableText extends StatefulWidget {
 class _DraggableTextState extends State<DraggableText> {
   late TextElement _currentElement;
   bool _isSelected = false;
+  bool _isDragging = false;
 
   @override
   void initState() {
@@ -46,6 +47,11 @@ class _DraggableTextState extends State<DraggableText> {
             _isSelected = !_isSelected;
           });
         },
+        onPanStart: (details) {
+          setState(() {
+            _isDragging = true;
+          });
+        },
         onPanUpdate: (details) {
           setState(() {
             _currentElement = _currentElement.copyWith(
@@ -55,11 +61,14 @@ class _DraggableTextState extends State<DraggableText> {
           });
         },
         onPanEnd: (details) {
+          setState(() {
+            _isDragging = false;
+          });
           widget.onUpdate(_currentElement);
         },
         child: Container(
           decoration: BoxDecoration(
-            border: _isSelected 
+            border: _isSelected || _isDragging
                 ? Border.all(color: Colors.blue, width: 2)
                 : null,
             borderRadius: BorderRadius.circular(4),

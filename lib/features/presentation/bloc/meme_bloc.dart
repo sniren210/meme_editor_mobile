@@ -103,7 +103,7 @@ class MemeBloc extends Bloc<MemeEvent, MemeState> {
 
   Future<void> _onLoadMemes(LoadMemesEvent event, Emitter<MemeState> emit) async {
     emit(MemeLoading());
-    
+
     final result = await getMemesUseCase();
     result.fold(
       (failure) => emit(MemeError(failure.message)),
@@ -120,18 +120,14 @@ class MemeBloc extends Bloc<MemeEvent, MemeState> {
     if (currentState is MemeLoaded) {
       emit(currentState.copyWith());
     }
-    
+
     final result = await getMemesUseCase();
     result.fold(
       (failure) => emit(MemeError(failure.message)),
       (memes) {
         if (currentState is MemeLoaded) {
-          final filteredMemes = currentState.searchQuery.isEmpty
-              ? memes
-              : memes.where((meme) => 
-                  meme.name.toLowerCase().contains(currentState.searchQuery.toLowerCase())
-                ).toList();
-          
+          final filteredMemes = currentState.searchQuery.isEmpty ? memes : memes.where((meme) => meme.name.toLowerCase().contains(currentState.searchQuery.toLowerCase())).toList();
+
           emit(currentState.copyWith(
             memes: memes,
             filteredMemes: filteredMemes,
@@ -150,12 +146,8 @@ class MemeBloc extends Bloc<MemeEvent, MemeState> {
   void _onSearchMemes(SearchMemesEvent event, Emitter<MemeState> emit) {
     final currentState = state;
     if (currentState is MemeLoaded) {
-      final filteredMemes = event.query.isEmpty
-          ? currentState.memes
-          : currentState.memes.where((meme) => 
-              meme.name.toLowerCase().contains(event.query.toLowerCase())
-            ).toList();
-      
+      final filteredMemes = event.query.isEmpty ? currentState.memes : currentState.memes.where((meme) => meme.name.toLowerCase().contains(event.query.toLowerCase())).toList();
+
       emit(currentState.copyWith(
         filteredMemes: filteredMemes,
         searchQuery: event.query,
@@ -165,15 +157,15 @@ class MemeBloc extends Bloc<MemeEvent, MemeState> {
 
   Future<void> _onToggleOfflineMode(ToggleOfflineModeEvent event, Emitter<MemeState> emit) async {
     final result = await toggleOfflineModeUseCase(event.isOffline);
+
     result.fold(
       (failure) => emit(MemeError(failure.message)),
       (isOffline) {
         final currentState = state;
+
         if (currentState is MemeLoaded) {
           emit(currentState.copyWith(isOfflineMode: isOffline));
         }
-        // Reload memes with new offline mode
-        add(LoadMemesEvent());
       },
     );
   }

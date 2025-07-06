@@ -20,6 +20,7 @@ class DraggableSticker extends StatefulWidget {
 class _DraggineStickerState extends State<DraggableSticker> {
   late StickerElement _currentElement;
   bool _isSelected = false;
+  bool _isDragging = false;
 
   @override
   void initState() {
@@ -46,32 +47,34 @@ class _DraggineStickerState extends State<DraggableSticker> {
             _isSelected = !_isSelected;
           });
         },
-        onPanUpdate: (details) {
+        onScaleStart: (details) {
           setState(() {
-            _currentElement = _currentElement.copyWith(
-              x: (_currentElement.x + details.delta.dx).clamp(0.0, double.infinity),
-              y: (_currentElement.y + details.delta.dy).clamp(0.0, double.infinity),
-            );
+            _isDragging = true;
           });
         },
-        onPanEnd: (details) {
-          widget.onUpdate(_currentElement);
-        },
         onScaleUpdate: (details) {
-          if (details.scale != 1.0) {
-            setState(() {
+          setState(() {
+            if (details.scale != 1.0) {
               _currentElement = _currentElement.copyWith(
                 size: (_currentElement.size * details.scale).clamp(20.0, 200.0),
               );
-            });
-          }
+            } else {
+              _currentElement = _currentElement.copyWith(
+                x: (_currentElement.x + details.focalPointDelta.dx).clamp(0.0, double.infinity),
+                y: (_currentElement.y + details.focalPointDelta.dy).clamp(0.0, double.infinity),
+              );
+            }
+          });
         },
         onScaleEnd: (details) {
+          setState(() {
+            _isDragging = false;
+          });
           widget.onUpdate(_currentElement);
         },
         child: Container(
           decoration: BoxDecoration(
-            border: _isSelected 
+            border: _isSelected || _isDragging
                 ? Border.all(color: Colors.blue, width: 2)
                 : null,
             borderRadius: BorderRadius.circular(4),
