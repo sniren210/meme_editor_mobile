@@ -74,9 +74,7 @@ class _DraggineStickerState extends State<DraggableSticker> {
         },
         child: Container(
           decoration: BoxDecoration(
-            border: _isSelected || _isDragging
-                ? Border.all(color: Colors.blue, width: 2)
-                : null,
+            border: _isSelected || _isDragging ? Border.all(color: Colors.blue, width: 2) : null,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Stack(
@@ -89,15 +87,15 @@ class _DraggineStickerState extends State<DraggableSticker> {
               ),
               if (_isSelected)
                 Positioned(
-                  top: -8,
-                  right: -8,
+                  top: 0,
+                  right: 0,
                   child: GestureDetector(
                     onTap: () {
                       widget.onDelete();
                     },
                     child: Container(
-                      width: 24,
-                      height: 24,
+                      width: 14,
+                      height: 14,
                       decoration: const BoxDecoration(
                         color: Colors.red,
                         shape: BoxShape.circle,
@@ -130,7 +128,7 @@ class _DraggineStickerState extends State<DraggableSticker> {
       'mind_blown': '🤯',
       'skull': '💀',
     };
-    
+
     return stickerMap[stickerType] ?? '😀';
   }
 }

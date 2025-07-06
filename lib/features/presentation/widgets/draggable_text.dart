@@ -93,15 +93,15 @@ class _DraggableTextState extends State<DraggableText> {
               ),
               if (_isSelected)
                 Positioned(
-                  top: -8,
-                  right: -8,
+                  top: 0,
+                  right: 0,
                   child: GestureDetector(
                     onTap: () {
                       widget.onDelete();
                     },
                     child: Container(
-                      width: 24,
-                      height: 24,
+                      width: 14,
+                      height: 14,
                       decoration: const BoxDecoration(
                         color: Colors.red,
                         shape: BoxShape.circle,

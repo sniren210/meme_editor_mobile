@@ -10,41 +10,80 @@ abstract class FileOperationsDataSource {
 }
 
 class FileOperationsDataSourceImpl implements FileOperationsDataSource {
+  
+  /// Helper method to request storage permissions based on platform and Android version
+  Future<bool> _requestStoragePermissions() async {
+    if (Platform.isAndroid) {
+      // For Android 13+ (API 33+), request photos permission
+      var photosPermission = await Permission.photos.status;
+      if (!photosPermission.isGranted) {
+        photosPermission = await Permission.photos.request();
+        if (!photosPermission.isGranted) {
+          return false;
+        }
+      }
+      
+      // For older Android versions, also check storage permission
+      var storagePermission = await Permission.storage.status;
+      if (!storagePermission.isGranted) {
+        storagePermission = await Permission.storage.request();
+        // Storage permission might be denied on newer Android versions, that's okay
+      }
+      
+    } else if (Platform.isIOS) {
+      // For iOS, request photos permission
+      var photosPermission = await Permission.photos.status;
+      if (!photosPermission.isGranted) {
+        photosPermission = await Permission.photos.request();
+        if (!photosPermission.isGranted) {
+          return false;
+        }
+      }
+    }
+    
+    return true;
+  }
   @override
   Future<String> saveImageToGallery(String imagePath) async {
     try {
-      // Request storage permission
-      var status = await Permission.storage.status;
-      if (!status.isGranted) {
-        status = await Permission.storage.request();
-        if (!status.isGranted) {
-          throw const PermissionFailure('Storage permission denied');
-        }
+      // Check if file exists
+      final file = File(imagePath);
+      if (!await file.exists()) {
+        throw const ServerFailure('Image file does not exist');
       }
 
-      // For Android 13+ (API 33+), use photos permission
-      if (Platform.isAndroid) {
-        var photosStatus = await Permission.photos.status;
-        if (!photosStatus.isGranted) {
-          photosStatus = await Permission.photos.request();
-          if (!photosStatus.isGranted) {
-            throw const PermissionFailure('Photos permission denied');
-          }
-        }
+      // Request appropriate permissions
+      final hasPermissions = await _requestStoragePermissions();
+      if (!hasPermissions) {
+        throw const PermissionFailure('Storage/Photos permission denied');
       }
 
+      // Save the image to gallery
       final result = await ImageGallerySaver.saveFile(imagePath);
       
-      if (result['isSuccess'] == true) {
+      // Check if the result is successful
+      if (result != null && result['isSuccess'] == true) {
         return result['filePath'] ?? imagePath;
       } else {
-        throw const ServerFailure('Failed to save image to gallery');
+        // Try alternative method if first attempt fails
+        final bytes = await file.readAsBytes();
+        final alternativeResult = await ImageGallerySaver.saveImage(
+          bytes,
+          quality: 100,
+          name: "meme_${DateTime.now().millisecondsSinceEpoch}",
+        );
+        
+        if (alternativeResult != null && alternativeResult['isSuccess'] == true) {
+          return alternativeResult['filePath'] ?? imagePath;
+        } else {
+          throw const ServerFailure('Failed to save image to gallery');
+        }
       }
     } catch (e) {
-      if (e is PermissionFailure) {
+      if (e is PermissionFailure || e is ServerFailure) {
         rethrow;
       }
-      throw ServerFailure('Error saving image: $e');
+      throw ServerFailure('Error saving image: ${e.toString()}');
     }
   }
 

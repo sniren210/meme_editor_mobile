@@ -27,6 +27,7 @@ dependencies:
   connectivity_plus: ^5.0.1
   dartz: ^0.10.1
   pull_to_refresh_flutter3: ^2.0.2
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -41,3 +42,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "icons/icon.png"
+  remove_alpha_ios: true
