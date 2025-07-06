@@ -215,8 +215,6 @@ flutter test integration_test/          # Integration tests
 - **Widget Tests**: All major UI components
 - **Integration Tests**: Critical user journeys
 
-For detailed testing documentation, see [TESTING.md](TESTING.md).
-
 ## 🎨 Theming
 
 The app supports both light and dark themes with:
