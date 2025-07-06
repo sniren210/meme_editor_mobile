@@ -1,0 +1,21 @@
+import 'package:dartz/dartz.dart';
+import '../entities/meme.dart';
+import '../entities/meme_edit.dart';
+import '../../../../core/error/failures.dart';
+
+abstract class MemeRepository {
+  Future<Either<Failure, List<Meme>>> getMemes();
+  Future<Either<Failure, List<Meme>>> getCachedMemes();
+  Future<Either<Failure, bool>> cacheMemes(List<Meme> memes);
+  
+  Future<Either<Failure, MemeEdit>> saveMemeEdit(MemeEdit memeEdit);
+  Future<Either<Failure, MemeEdit?>> getMemeEdit(String memeId);
+  Future<Either<Failure, List<MemeEdit>>> getAllMemeEdits();
+  Future<Either<Failure, bool>> deleteMemeEdit(String memeId);
+  
+  Future<Either<Failure, String>> saveImageToGallery(String imagePath);
+  Future<Either<Failure, bool>> shareImage(String imagePath);
+  
+  Future<Either<Failure, bool>> isOfflineMode();
+  Future<Either<Failure, bool>> setOfflineMode(bool isOffline);
+}
