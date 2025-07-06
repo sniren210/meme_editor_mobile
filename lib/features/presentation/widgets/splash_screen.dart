@@ -87,19 +87,27 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _startAnimations() async {
     // Start logo animation
-    _logoController.forward();
+    if (mounted) {
+      _logoController.forward();
+    }
     
     // Start fade animation after a delay
     await Future.delayed(const Duration(milliseconds: 300));
-    _fadeController.forward();
+    if (mounted) {
+      _fadeController.forward();
+    }
     
     // Start pulse animation
     await Future.delayed(const Duration(milliseconds: 500));
-    _pulseController.repeat(reverse: true);
+    if (mounted) {
+      _pulseController.repeat(reverse: true);
+    }
     
     // Complete splash screen after total duration
     await Future.delayed(const Duration(milliseconds: 2500));
-    widget.onAnimationComplete();
+    if (mounted) {
+      widget.onAnimationComplete();
+    }
   }
 
   @override

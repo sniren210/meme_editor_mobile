@@ -7,6 +7,7 @@ import 'package:meme_editor_mobile/core/theme/theme_bloc.dart';
 import 'package:meme_editor_mobile/features/domain/entities/meme.dart';
 import 'package:meme_editor_mobile/features/presentation/bloc/meme_bloc.dart';
 import 'package:meme_editor_mobile/features/presentation/pages/meme_detail_page.dart';
+import 'package:meme_editor_mobile/features/presentation/widgets/shimmer.dart';
 
 import 'package:meme_editor_mobile/injection_container.dart' as di;
 
@@ -483,16 +484,14 @@ class _AnimatedMemeGridItemState extends State<AnimatedMemeGridItem> with Single
                         child: CachedNetworkImage(
                           imageUrl: widget.meme.url,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            height: 120,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                            ),
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Theme.of(context).colorScheme.primary,
+                          placeholder: (context, url) => Shimmer.fromColors(
+                            baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                            highlightColor: Theme.of(context).colorScheme.surface,
+                            child: Container(
+                              height: 120,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                               ),
                             ),
                           ),

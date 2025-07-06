@@ -212,12 +212,6 @@ void main() {
         act: (bloc) => bloc.add(RefreshMemesEvent()),
         expect: () => [
           const MemeLoaded(
-            memes: [],
-            filteredMemes: [],
-            isOfflineMode: false,
-            searchQuery: 'Test',
-          ),
-          const MemeLoaded(
             memes: tMemes,
             filteredMemes: [
               Meme(

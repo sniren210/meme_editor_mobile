@@ -91,7 +91,7 @@ class _DraggableTextState extends State<DraggableText> {
                   ],
                 ),
               ),
-              if (_isSelected)
+              if (_isSelected) ...[
                 Positioned(
                   top: 0,
                   right: 0,
@@ -114,6 +114,36 @@ class _DraggableTextState extends State<DraggableText> {
                     ),
                   ),
                 ),
+                Positioned(
+                  bottom: -20,
+                  right: -20,
+                  child: GestureDetector(
+                    onPanUpdate: (details) {
+                      setState(() {
+                        final newFontSize = _currentElement.fontSize + details.delta.dy;
+                        _currentElement = _currentElement.copyWith(
+                          fontSize: newFontSize.clamp(10.0, 100.0),
+                        );
+                      });
+                      widget.onUpdate(_currentElement);
+                    },
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.open_with,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
