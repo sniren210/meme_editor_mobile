@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import '../entities/meme.dart';
-import '../repositories/meme_repository.dart';
-import '../../../../core/error/failures.dart';
+import 'package:meme_editor_mobile/core/error/failures.dart';
+import 'package:meme_editor_mobile/features/domain/entities/meme.dart';
+import 'package:meme_editor_mobile/features/domain/repositories/meme_repository.dart';
 
 class GetMemesUseCase {
   final MemeRepository repository;

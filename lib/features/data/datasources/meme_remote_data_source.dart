@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:meme_editor_mobile/core/constants/constants.dart';
 import 'package:meme_editor_mobile/core/error/failures.dart';
-import '../models/meme_model.dart';
+import 'package:meme_editor_mobile/features/data/models/meme_model.dart';
 
 abstract class MemeRemoteDataSource {
   Future<List<MemeModel>> getMemes();

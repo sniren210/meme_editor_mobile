@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import '../entities/meme.dart';
-import '../entities/meme_edit.dart';
-import '../../../../core/error/failures.dart';
+import 'package:meme_editor_mobile/core/error/failures.dart';
+import 'package:meme_editor_mobile/features/domain/entities/meme.dart';
+import 'package:meme_editor_mobile/features/domain/entities/meme_edit.dart';
 
 abstract class MemeRepository {
   Future<Either<Failure, List<Meme>>> getMemes();

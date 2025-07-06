@@ -1,8 +1,8 @@
 import 'dart:io';
+import 'package:meme_editor_mobile/core/error/failures.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../../core/error/failures.dart';
 
 abstract class FileOperationsDataSource {
   Future<String> saveImageToGallery(String imagePath);
