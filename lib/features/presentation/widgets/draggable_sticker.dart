@@ -109,8 +109,8 @@ class _DraggineStickerState extends State<DraggableSticker> {
                   ),
                 ),
                 Positioned(
-                  bottom: -20,
-                  right: -20,
+                  bottom: 0,
+                  right: 0,
                   child: GestureDetector(
                     onPanUpdate: (details) {
                       setState(() {
@@ -122,8 +122,8 @@ class _DraggineStickerState extends State<DraggableSticker> {
                       widget.onUpdate(_currentElement);
                     },
                     child: Container(
-                      width: 24,
-                      height: 24,
+                      width: 14,
+                      height: 14,
                       decoration: BoxDecoration(
                         color: Colors.blue,
                         shape: BoxShape.circle,
@@ -132,7 +132,7 @@ class _DraggineStickerState extends State<DraggableSticker> {
                       child: const Icon(
                         Icons.open_with,
                         color: Colors.white,
-                        size: 16,
+                        size: 12,
                       ),
                     ),
                   ),
